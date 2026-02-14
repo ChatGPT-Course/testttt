@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
+    <title>FitKitchen · спорт-еда</title>
+    <!-- Telegram WebApp (необязательно, сохранено для совместимости) -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <!-- Font Awesome 6 (иконки вместо эмодзи) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* ===== ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: #f9f5f0;   /* тёплый светлый фон */
+            color: #1e1e1e;
+            line-height: 1.5;
+            font-size: 15px;
+            min-height: 100vh;
+            padding-bottom: 80px; /* место под нижнюю навигацию */
+        }
+
+        /* Контейнер для центрирования на больших экранах */
+        .app-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 12px 16px 20px;
+        }
+
+        /* ===== ШАПКА (ЛАКОНИЧНАЯ) ===== */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background-color: #ffffff;
+            border-radius: 28px;
+            padding: 12px 22px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+            border: 1px solid #eeeeee;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-icon {
+            background: #FF8C00;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 40%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+        }
+
+        .logo-text {
+            font-weight: 620;
+            font-size: 18px;
+            letter-spacing: -0.3px;
+            color: #1e1e1e;
+        }
+
+        .header-balance {
+            background: #f0f0f0;
+            padding: 8px 16px;
+            border-radius: 40px;
+            font-size: 15px;
+            font-weight: 600;
+            color: #2b2b2b;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .header-balance i { color: #FF8C00; }
+
+        /* ===== СТРАНИЦЫ (ПЕРЕКЛЮЧЕНИЕ) ===== */
+        .page {
+            display: none;
+            animation: fade 0.25s ease;
+        }
+        .page.active-page { display: block; }
+        @keyframes fade { from { opacity: 0.4; } to { opacity: 1; } }
+
+        /* ===== СТРАНИЦА МЕНЮ ===== */
+        /* фильтр-лента (якоря) */
+        .filter-scroll {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding: 6px 0 16px;
+            margin-bottom: 6px;
+            scrollbar-width: thin;
+            white-space: nowrap;
+            -webkit-overflow-scrolling: touch;
+        }
+        .filter-chip {
+            background: white;
+            border: 1px solid #e4e4e4;
+            color: #3a3a3a;
+            padding: 8px 20px;
+            border-radius: 40px;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: 0.18s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            flex-shrink: 0;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .filter-chip i { color: #FF8C00; font-size: 14px; }
+        .filter-chip:hover { background: #f8f8f8; border-color: #ccc; }
+        .filter-chip.active-filter {
+            background: #FF8C00;
+            color: white;
+            border-color: #FF8C00;
+        }
+        .filter-chip.active-filter i { color: white; }
+
+        /* сетка товаров: 2 карточки в ряд */
+        .products-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 12px 0 32px;
+        }
+
+        .product-card {
+            background: white;
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.02);
+            border: 1px solid #f0f0f0;
+            transition: 0.2s;
+            display: flex;
+            flex-direction: column;
+        }
+        .product-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 15px 25px rgba(0,0,0,0.03);
+            border-color: #ddd;
+        }
+
+        .product-img {
+            width: 100%;
+            aspect-ratio: 1.2 / 1;
+            background-color: #eaeef2;
+            background-size: cover;
+            background-position: center;
+        }
+
+        .product-info {
+            padding: 16px 14px 18px;
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+
+        .product-title {
+            font-weight: 670;
+            font-size: 17px;
+            margin-bottom: 6px;
+            color: #1a1e24;
+        }
+        .product-desc {
+            font-size: 13px;
+            color: #6b737b;
+            margin-bottom: 10px;
+            line-height: 1.4;
+        }
+        .product-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: auto;
+        }
+        .product-price {
+            font-weight: 700;
+            font-size: 18px;
+            color: #1e1e1e;
+        }
+
+        /* контролы корзины */
+        .cart-action {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .add-to-cart {
+            background: #FF8C00;
+            border: none;
+            color: white;
+            font-weight: 600;
+            padding: 8px 16px;
+            border-radius: 40px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: 0.15s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .add-to-cart i { font-size: 13px; }
+        .add-to-cart:hover { background: #e07b00; }
+
+        .quantity-control {
+            display: flex;
+            align-items: center;
+            background: #f2f4f6;
+            border-radius: 40px;
+            padding: 3px;
+        }
+        .qty-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: none;
+            background: white;
+            color: #1e1e1e;
+            font-weight: 600;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+        }
+        .qty-btn:hover { background: #f9f9f9; }
+        .qty-value {
+            min-width: 32px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 16px;
+        }
+        .hidden-control { display: none !important; }
+
+        .category-section {
+            scroll-margin-top: 70px;
+        }
+        .category-header {
+            font-size: 22px;
+            font-weight: 650;
+            margin: 28px 0 14px;
+            padding-bottom: 6px;
+            border-bottom: 3px solid #FF8C00;
+            display: inline-block;
+            color: #1a1e24;
+        }
+
+        /* ===== СТРАНИЦА ПРОФИЛЯ ===== */
+        .profile-card {
+            background: white;
+            border-radius: 32px;
+            padding: 28px 26px;
+            border: 1px solid #ededed;
+            margin-top: 8px;
+        }
+        .profile-avatar-lg {
+            width: 80px;
+            height: 80px;
+            background: #d9d9d9;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            color: #4d4d4d;
+            margin-bottom: 16px;
+        }
+        .profile-name-lg {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+        .profile-meta {
+            color: #6a6a6a;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 12px;
+        }
+        .stat-grid {
+            display: flex;
+            gap: 24px;
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 24px;
+            margin: 20px 0;
+        }
+        .stat-item {
+            flex: 1;
+        }
+        .stat-label {
+            font-size: 14px;
+            color: #777;
+        }
+        .stat-number {
+            font-size: 22px;
+            font-weight: 700;
+            color: #FF8C00;
+        }
+        .edit-btn {
+            background: #FF8C00;
+            color: white;
+            border: none;
+            padding: 14px 0;
+            width: 100%;
+            border-radius: 60px;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            transition: 0.15s;
+        }
+
+        /* ===== СТРАНИЦА ПОДДЕРЖКИ ===== */
+        .support-chat {
+            background: white;
+            border-radius: 32px;
+            padding: 26px;
+            border: 1px solid #f0f0f0;
+        }
+        .message {
+            background: #f4f4f6;
+            padding: 16px 20px;
+            border-radius: 24px;
+            margin-bottom: 16px;
+            max-width: 80%;
+        }
+        .message.operator {
+            background: #FF8C00;
+            color: white;
+            margin-left: auto;
+        }
+        .support-input {
+            display: flex;
+            margin-top: 30px;
+            gap: 10px;
+        }
+        .support-input input {
+            flex: 1;
+            padding: 16px 20px;
+            border: 1px solid #e2e2e2;
+            border-radius: 60px;
+            outline: none;
+            font-size: 15px;
+        }
+        .support-input button {
+            background: #FF8C00;
+            border: none;
+            border-radius: 60px;
+            padding: 0 28px;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+        }
+
+        /* ===== НИЖНЯЯ НАВИГАЦИЯ (ФИКСИРОВАННАЯ) ===== */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: white;
+            border-top: 1px solid #eaeaea;
+            box-shadow: 0 -4px 12px rgba(0,0,0,0.02);
+            display: flex;
+            justify-content: space-around;
+            padding: 8px 12px 12px;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+            max-width: 1000px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-radius: 30px 30px 0 0;
+        }
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+            color: #7a7a7a;
+            transition: 0.2s;
+            padding: 6px 16px;
+            border-radius: 40px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .nav-item i {
+            font-size: 22px;
+            margin-bottom: 4px;
+        }
+        .nav-item.active {
+            color: #FF8C00;
+            background: rgba(255,140,0,0.08);
+        }
+
+        /* адаптация для ПК */
+        @media (min-width: 768px) {
+            .products-grid { gap: 26px; }
+            .filter-scroll { justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- шапка с балансом -->
+        <header class="header">
+            <div class="logo-area">
+                <span class="logo-icon"><i class="fas fa-utensils"></i></span>
+                <span class="logo-text">FitKitchen</span>
+            </div>
+            <div class="header-balance">
+                <i class="fas fa-wallet"></i>
+                <span id="headerBalance">1 420</span> баллов
+            </div>
+        </header>
+
+        <!-- СТРАНИЦЫ -->
+        <!-- Меню (по умолчанию активна) -->
+        <div id="menu-page" class="page active-page">
+            <!-- фильтр-лента (категории) -->
+            <div class="filter-scroll" id="filter-scroll"></div>
+            <!-- контейнер для категорий и товаров -->
+            <div id="categories-container"></div>
+        </div>
+
+        <!-- Профиль -->
+        <div id="profile-page" class="page">
+            <div class="profile-card">
+                <div class="profile-avatar-lg">
+                    <i class="fas fa-user"></i>
+                </div>
+                <h2 class="profile-name-lg">Анна Смирнова</h2>
+                <div class="profile-meta">
+                    <span><i class="fas fa-envelope"></i> @anna.fit</span>
+                    <span><i class="fas fa-id-card"></i> ID 1023</span>
+                </div>
+                <div class="stat-grid">
+                    <div class="stat-item">
+                        <div class="stat-label">Заказы</div>
+                        <div class="stat-number">24</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Бонусы</div>
+                        <div class="stat-number">1 420</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Уровень</div>
+                        <div class="stat-number">Gold</div>
+                    </div>
+                </div>
+                <button class="edit-btn"><i class="fas fa-pen"></i> Редактировать</button>
+            </div>
+        </div>
+
+        <!-- Поддержка -->
+        <div id="support-page" class="page">
+            <div class="support-chat">
+                <div style="display: flex; gap: 12px; margin-bottom: 24px;">
+                    <i class="fas fa-headset" style="font-size: 28px; color: #FF8C00;"></i>
+                    <h3 style="font-weight: 650;">Чат поддержки</h3>
+                </div>
+                <div class="message">Здравствуйте! Есть доставка в тренажерный зал?</div>
+                <div class="message operator">Да, приносим заказы в любую зону клуба за 5–7 минут.</div>
+                <div class="support-input">
+                    <input type="text" placeholder="Напишите сообщение...">
+                    <button><i class="fas fa-paper-plane"></i></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- НИЖНЯЯ НАВИГАЦИЯ (ФИКСИРОВАННАЯ) -->
+    <nav class="bottom-nav">
+        <button class="nav-item active" data-page="menu-page"><i class="fas fa-utensils"></i><span>Меню</span></button>
+        <button class="nav-item" data-page="profile-page"><i class="fas fa-user"></i><span>Профиль</span></button>
+        <button class="nav-item" data-page="support-page"><i class="fas fa-message"></i><span>Поддержка</span></button>
+    </nav>
+
+    <script>
+        (function() {
+            // ---------- ДАННЫЕ ТОВАРОВ (С ФОТО И СОСТАВОМ) ----------
+            const products = [
+                // горячие напитки
+                { id: 1, name: 'Эспрессо', desc: '40 мл · классический', weight: '40 мл', price: 99, category: 'hot', img: 'https://images.unsplash.com/photo-1610642372674-ffdf887a0c66?w=400&auto=format' },
+                { id: 2, name: 'Капучино', desc: '200 мл · молочная пена', weight: '200 мл', price: 169, category: 'hot', img: 'https://images.unsplash.com/photo-1572442388796-11668a67e53d?w=400&auto=format' },
+                { id: 3, name: 'Американо', desc: '250 мл · мягкий вкус', weight: '250 мл', price: 129, category: 'hot', img: 'https://images.unsplash.com/photo-1610889556528-9a770e32642f?w=400&auto=format' },
+                { id: 4, name: 'Облепиховый чай', desc: 'имбирь, мед', weight: '300 мл', price: 149, category: 'hot', img: 'https://images.unsplash.com/photo-1563805042-7684c019e1cb?w=400&auto=format' },
+                // холодные напитки
+                { id: 5, name: 'Лимонад малина', desc: 'домашний, мята', weight: '350 мл', price: 189, category: 'cold', img: 'https://images.unsplash.com/photo-1621930231178-9d540ba7debf?w=400&auto=format' },
+                { id: 6, name: 'Кофе со льдом', desc: 'латте, сироп', weight: '300 мл', price: 179, category: 'cold', img: 'https://images.unsplash.com/photo-1461023058943-07fcbe16d735?w=400&auto=format' },
+                { id: 7, name: 'Вода с огурцом', desc: 'минеральная + мята', weight: '400 мл', price: 99, category: 'cold', img: 'https://images.unsplash.com/photo-1553787499-6f9133860278?w=400&auto=format' },
+                { id: 8, name: 'Протеиновый коктейль', desc: 'ваниль, банан', weight: '400 мл', price: 290, category: 'cold', img: 'https://images.unsplash.com/photo-1571115764595-644a1f56a55c?w=400&auto=format' },
+                // закуски
+                { id: 9, name: 'Сырные палочки', desc: 'пармезан, 6 шт', weight: '180 г', price: 220, category: 'snack', img: 'https://images.unsplash.com/photo-1531749668029-2db88e4276be?w=400&auto=format' },
+                { id: 10, name: 'Хумус с овощами', desc: 'нут, паприка', weight: '200 г', price: 240, category: 'snack', img: 'https://images.unsplash.com/photo-1585937421612-70a008356c36?w=400&auto=format' },
+                // десерты
+                { id: 11, name: 'Чизкейк фитнес', desc: 'творог, мюсли', weight: '150 г', price: 210, category: 'dessert', img: 'https://images.unsplash.com/photo-1524351199678-941a58a3df50?w=400&auto=format' },
+                { id: 12, name: 'Печенье протеин', desc: '3 шт, без сахара', weight: '90 г', price: 150, category: 'dessert', img: 'https://images.unsplash.com/photo-1601820809541-3b9b10bff2df?w=400&auto=format' },
+                // пицца
+                { id: 13, name: 'Пицца с курицей', desc: 'тонкое тесто', weight: '350 г', price: 390, category: 'pizza', img: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=400&auto=format' },
+                { id: 14, name: 'Маргарита', desc: 'сыр, базилик', weight: '320 г', price: 340, category: 'pizza', img: 'https://images.unsplash.com/photo-1604382354936-07c5d9983bd3?w=400&auto=format' },
+                // роллы
+                { id: 15, name: 'Филадельфия лайт', desc: 'авокадо, огурец', weight: '220 г', price: 430, category: 'roll', img: 'https://images.unsplash.com/photo-1617196035154-1e7e6e28b0db?w=400&auto=format' },
+                { id: 16, name: 'Калифорния', desc: 'кунжут, краб', weight: '230 г', price: 450, category: 'roll', img: 'https://images.unsplash.com/photo-1559410545-0bdcd187e52a?w=400&auto=format' },
+                // супы
+                { id: 17, name: 'Томатный суп', desc: 'базилик, сливки', weight: '300 мл', price: 230, category: 'soup', img: 'https://images.unsplash.com/photo-1547592180-85f173990554?w=400&auto=format' },
+                { id: 18, name: 'Чечевичный крем', desc: 'с зеленью', weight: '300 мл', price: 210, category: 'soup', img: 'https://images.unsplash.com/photo-1584844329092-1f66e42190b5?w=400&auto=format' },
+            ];
+
+            // категории для фильтра и отображения
+            const categories = [
+                { id: 'hot', name: 'Горячие напитки', icon: 'fa-mug-hot' },
+                { id: 'cold', name: 'Холодные напитки', icon: 'fa-martini-glass-citrus' },
+                { id: 'snack', name: 'Закуски', icon: 'fa-bowl-food' },
+                { id: 'dessert', name: 'Десерты', icon: 'fa-cake-candles' },
+                { id: 'pizza', name: 'Пицца', icon: 'fa-pizza-slice' },
+                { id: 'roll', name: 'Роллы', icon: 'fa-fish' },
+                { id: 'soup', name: 'Супы', icon: 'fa-utensils' }
+            ];
+
+            // Состояние корзины (количество)
+            const cart = new Map();  // productId -> quantity
+
+            // ---------- ГЕНЕРАЦИЯ ФИЛЬТРОВ ----------
+            function renderFilters() {
+                const container = document.getElementById('filter-scroll');
+                let html = '';
+                categories.forEach((cat, index) => {
+                    html += `<div class="filter-chip ${index === 0 ? 'active-filter' : ''}" data-target="${cat.id}">
+                        <i class="fas ${cat.icon}"></i> ${cat.name}
+                    </div>`;
+                });
+                container.innerHTML = html;
+
+                // обработчики фильтров (прокрутка к категории)
+                document.querySelectorAll('.filter-chip').forEach(chip => {
+                    chip.addEventListener('click', function() {
+                        document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active-filter'));
+                        this.classList.add('active-filter');
+                        const targetId = this.dataset.target;
+                        const section = document.getElementById(`cat-${targetId}`);
+                        if (section) section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    });
+                });
+            }
+
+            // ---------- ГЕНЕРАЦИЯ КАТЕГОРИЙ И КАРТОЧЕК ----------
+            function renderProducts() {
+                const container = document.getElementById('categories-container');
+                let html = '';
+
+                categories.forEach(cat => {
+                    const catProducts = products.filter(p => p.category === cat.id);
+                    if (!catProducts.length) return;
+
+                    html += `<div id="cat-${cat.id}" class="category-section">`;
+                    html += `<div class="category-header"><i class="fas ${cat.icon}" style="margin-right: 10px;"></i>${cat.name}</div>`;
+                    html += `<div class="products-grid">`;
+
+                    catProducts.forEach(prod => {
+                        const qty = cart.get(prod.id) || 0;
+                        const showInc = qty > 0;
+                        html += `<div class="product-card" data-id="${prod.id}">`;
+                        html += `<div class="product-img" style="background-image: url('${prod.img}');"></div>`;
+                        html += `<div class="product-info">`;
+                        html += `<div class="product-title">${prod.name}</div>`;
+                        html += `<div class="product-desc">${prod.desc} · ${prod.weight}</div>`;
+                        html += `<div class="product-meta">`;
+                        html += `<span class="product-price">${prod.price} ₽</span>`;
+
+                        html += `<div class="cart-action" data-prod-id="${prod.id}">`;
+                        // кнопка "В корзину"
+                        html += `<button class="add-to-cart cart-add-btn ${showInc ? 'hidden-control' : ''}" data-id="${prod.id}"><i class="fas fa-cart-plus"></i> В корзину</button>`;
+                        // блок +/-
+                        html += `<div class="quantity-control ${!showInc ? 'hidden-control' : ''}" data-id="${prod.id}">`;
+                        html += `<button class="qty-btn dec-btn" data-id="${prod.id}">−</button>`;
+                        html += `<span class="qty-value" id="qty-${prod.id}">${qty}</span>`;
+                        html += `<button class="qty-btn inc-btn" data-id="${prod.id}">+</button>`;
+                        html += `</div>`;
+                        html += `</div>`;
+
+                        html += `</div>`; // product-meta
+                        html += `</div>`; // product-info
+                        html += `</div>`;
+                    });
+
+                    html += `</div></div>`;
+                });
+
+                container.innerHTML = html;
+            }
+
+            // ---------- ПРИВЯЗКА СОБЫТИЙ К КАРТОЧКАМ ----------
+            function attachCartEvents() {
+                document.querySelectorAll('.cart-add-btn').forEach(btn => {
+                    btn.removeEventListener('click', handleAdd);
+                    btn.addEventListener('click', handleAdd);
+                });
+                document.querySelectorAll('.inc-btn').forEach(btn => {
+                    btn.removeEventListener('click', handleInc);
+                    btn.addEventListener('click', handleInc);
+                });
+                document.querySelectorAll('.dec-btn').forEach(btn => {
+                    btn.removeEventListener('click', handleDec);
+                    btn.addEventListener('click', handleDec);
+                });
+            }
+
+            function handleAdd(e) {
+                const id = parseInt(e.currentTarget.dataset.id);
+                cart.set(id, 1);
+                updateUIForProduct(id);
+            }
+            function handleInc(e) {
+                const id = parseInt(e.currentTarget.dataset.id);
+                const qty = cart.get(id) || 0;
+                cart.set(id, qty + 1);
+                updateUIForProduct(id);
+            }
+            function handleDec(e) {
+                const id = parseInt(e.currentTarget.dataset.id);
+                const qty = cart.get(id) || 0;
+                if (qty <= 1) cart.delete(id);
+                else cart.set(id, qty - 1);
+                updateUIForProduct(id);
+            }
+
+            function updateUIForProduct(id) {
+                const qtySpan = document.getElementById(`qty-${id}`);
+                const newQty = cart.get(id) || 0;
+                if (qtySpan) qtySpan.textContent = newQty;
+
+                const cartAction = document.querySelector(`.cart-action[data-prod-id="${id}"]`);
+                if (!cartAction) return;
+                const addBtn = cartAction.querySelector('.cart-add-btn');
+                const qtyCtrl = cartAction.querySelector('.quantity-control');
+                if (newQty > 0) {
+                    addBtn?.classList.add('hidden-control');
+                    qtyCtrl?.classList.remove('hidden-control');
+                } else {
+                    addBtn?.classList.remove('hidden-control');
+                    qtyCtrl?.classList.add('hidden-control');
+                }
+            }
+
+            // ---------- ПЕРЕКЛЮЧЕНИЕ СТРАНИЦ ЧЕРЕЗ НИЖНЕЕ МЕНЮ ----------
+            const navItems = document.querySelectorAll('.nav-item');
+            const pages = {
+                'menu-page': document.getElementById('menu-page'),
+                'profile-page': document.getElementById('profile-page'),
+                'support-page': document.getElementById('support-page')
+            };
+
+            function setActivePage(pageId) {
+                Object.values(pages).forEach(p => p.classList.remove('active-page'));
+                pages[pageId].classList.add('active-page');
+                navItems.forEach(item => {
+                    item.classList.remove('active');
+                    if (item.dataset.page === pageId) item.classList.add('active');
+                });
+                // Если открыли меню – перерисовать (чтобы обновить возможные изменения корзины)
+                if (pageId === 'menu-page') {
+                    renderProducts();
+                    attachCartEvents();
+                }
+            }
+
+            navItems.forEach(item => {
+                item.addEventListener('click', () => {
+                    setActivePage(item.dataset.page);
+                });
+            });
+
+            // ---------- ИНИЦИАЛИЗАЦИЯ ----------
+            function init() {
+                renderFilters();
+                renderProducts();
+                attachCartEvents();
+
+                // небольшой демо-баланс
+                document.getElementById('headerBalance').textContent = '1 420';
+            }
+
+            init();
+
+            // перехват кликов по навигации, чтобы не перезагружать страницу (предотвращаем переход по якорям)
+        })();
+    </script>
+</body>
+</html>
