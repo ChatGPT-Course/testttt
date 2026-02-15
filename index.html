@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>SushiMoji · доставка</title>
-    <!-- Font Awesome 6 (кастомные SVG-иконки через иконочный шрифт) -->
+    <title>FitnesEDA · здоровое питание</title>
+    <!-- Font Awesome 6 (иконки) -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         /* ---------- ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ---------- */
@@ -21,7 +21,7 @@
             color: #1c1f2c;
             line-height: 1.4;
             font-size: 14px;
-            padding: 0 0 90px 0;
+            padding: 0 0 85px 0;
             min-height: 100vh;
         }
 
@@ -31,44 +31,28 @@
             padding: 0 14px;
         }
 
-        /* ---------- ШАПКА ---------- */
+        /* ---------- ШАПКА (только название) ---------- */
         .header {
-            padding: 16px 0 6px;
-            margin-bottom: 6px;
+            padding: 18px 0 8px;
         }
 
         .shop-title {
-            font-size: 1.8rem;
+            font-size: 2rem;
             font-weight: 700;
             letter-spacing: -0.5px;
             background: linear-gradient(145deg, #202b38, #2a3d4e);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            margin-bottom: 2px;
         }
 
-        .shop-address {
-            font-size: 0.85rem;
-            color: #6c757d;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .shop-address i {
-            color: #FF8C00;
-            font-size: 0.8rem;
-        }
-
-        /* ---------- ЛИПКАЯ ПАНЕЛЬ ФИЛЬТРОВ (уменьшенная) ---------- */
+        /* ---------- ЛИПКАЯ ПАНЕЛЬ ФИЛЬТРОВ (только в меню) ---------- */
         .filter-sticky {
             position: sticky;
             top: 0;
             z-index: 15;
             background-color: #f8f6f2;
             padding: 8px 0 6px;
-            margin-bottom: 2px;
             backdrop-filter: blur(4px);
             border-bottom: 1px solid rgba(0,0,0,0.02);
         }
@@ -109,7 +93,7 @@
             gap: 6px;
         }
 
-        .filter-chip i, .filter-chip .fa-solid, .filter-chip .fa-regular {
+        .filter-chip i {
             font-size: 0.9rem;
             color: #FF8C00;
         }
@@ -124,38 +108,51 @@
             color: white;
         }
 
-        /* ---------- СЕКЦИИ ТОВАРОВ ---------- */
-        .category-section {
-            scroll-margin-top: 70px;
+        /* ---------- СЕТКА ДЛЯ КАРТОЧЕК (ГЛАВНАЯ И МЕНЮ) ---------- */
+        .grid-2col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin: 16px 0 20px;
+        }
+
+        /* Карточка категории на главной */
+        .category-card {
+            background: white;
+            border-radius: 24px;
+            padding: 20px 12px;
+            text-align: center;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.02);
+            border: 1px solid #f0f2f5;
+            cursor: pointer;
+            transition: 0.15s;
+        }
+
+        .category-card:active {
+            transform: scale(0.96);
+            background: #f9f9f9;
+        }
+
+        .category-card i {
+            font-size: 2.2rem;
+            color: #FF8C00;
             margin-bottom: 8px;
         }
 
-        .category-header {
-            font-size: 1.3rem;
-            font-weight: 650;
-            margin: 18px 0 8px;
-            padding-bottom: 4px;
-            border-bottom: 2px solid #FF8C00;
-            display: inline-block;
-            color: #1d2a35;
+        .category-card span {
+            font-weight: 600;
+            font-size: 1rem;
+            display: block;
         }
 
-        /* СЕТКА ТОВАРОВ (2 КОЛОНКИ) */
-        .products-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-bottom: 12px;
-        }
-
-        /* КАРТОЧКА ТОВАРА (уменьшенная, аккуратная) */
+        /* Карточка товара в меню */
         .product-card {
             background: white;
             border-radius: 22px;
             overflow: hidden;
-            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.02);
+            box-shadow: 0 4px 14px rgba(0,0,0,0.02);
             border: 1px solid #f0f2f5;
-            transition: transform 0.15s;
+            transition: 0.15s;
             display: flex;
             flex-direction: column;
         }
@@ -215,12 +212,6 @@
             font-weight: 700;
             font-size: 1.2rem;
             color: #1e2a36;
-        }
-
-        /* блок корзины в карточке */
-        .cart-action {
-            display: flex;
-            align-items: center;
         }
 
         .price-cart-btn {
@@ -295,59 +286,35 @@
             display: none !important;
         }
 
-        /* ---------- ПЛАВАЮЩАЯ КНОПКА КОРЗИНЫ ---------- */
-        .floating-cart {
-            position: fixed;
-            bottom: 90px; /* над нижней навигацией */
-            right: 20px;
-            background: #FF8C00;
-            color: white;
-            border: none;
-            border-radius: 50px;
-            padding: 14px 24px;
-            font-weight: 700;
-            font-size: 1.1rem;
-            box-shadow: 0 8px 24px rgba(255,140,0,0.35);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            cursor: pointer;
-            transition: 0.2s;
-            z-index: 50;
-            border: 1px solid rgba(255,255,255,0.2);
-            backdrop-filter: blur(4px);
+        /* Категории в меню (заголовки) */
+        .category-section {
+            scroll-margin-top: 70px;
+            margin-bottom: 8px;
         }
 
-        .floating-cart:active {
-            transform: scale(0.95);
-            background: #e07b00;
+        .category-header {
+            font-size: 1.3rem;
+            font-weight: 650;
+            margin: 18px 0 8px;
+            padding-bottom: 4px;
+            border-bottom: 2px solid #FF8C00;
+            display: inline-block;
+            color: #1d2a35;
         }
 
-        .floating-cart i {
-            font-size: 1.2rem;
-        }
-
-        .cart-total {
-            background: rgba(0,0,0,0.1);
-            padding: 4px 12px;
-            border-radius: 40px;
-            font-size: 1rem;
-        }
-
-        /* ---------- НИЖНЯЯ НАВИГАЦИЯ (3 ПУНКТА) ---------- */
+        /* ---------- НИЖНЯЯ НАВИГАЦИЯ (3 кнопки + виджет корзины) ---------- */
         .bottom-nav {
             position: fixed;
             bottom: 0;
             left: 0;
             right: 0;
-            background: rgba(255, 255, 255, 0.9);
+            background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             border-top: 1px solid rgba(0,0,0,0.03);
             box-shadow: 0 -6px 20px rgba(0,0,0,0.02);
-            padding: 6px 12px 10px;
+            padding: 8px 12px 12px;
             display: flex;
-            justify-content: space-around;
             align-items: center;
             z-index: 100;
             max-width: 600px;
@@ -364,18 +331,16 @@
             align-items: center;
             justify-content: center;
             gap: 2px;
-            font-size: 0.65rem;
+            font-size: 0.7rem;
             font-weight: 500;
             color: #8d9aa5;
-            transition: color 0.15s;
             cursor: pointer;
-            flex: 1;
+            width: 25%; /* 3 кнопки по 25% = 75% */
             padding: 6px 0;
         }
 
         .nav-item i {
             font-size: 1.5rem;
-            font-weight: 300;
             margin-bottom: 2px;
         }
 
@@ -383,8 +348,40 @@
             color: #FF8C00;
         }
 
-        .nav-item:active {
-            opacity: 0.6;
+        .cart-widget {
+            width: 25%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: #FF8C00;
+            border-radius: 40px;
+            padding: 8px 0;
+            color: white;
+            cursor: pointer;
+            box-shadow: 0 4px 14px rgba(255,140,0,0.3);
+            margin-left: 0; 
+            border: none;
+            transition: 0.15s;
+        }
+
+        .cart-widget:active {
+            transform: scale(0.96);
+        }
+
+        .cart-widget i {
+            font-size: 1.3rem;
+            margin-bottom: 2px;
+        }
+
+        .cart-widget span {
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .cart-widget .cart-price {
+            font-size: 0.8rem;
+            font-weight: 700;
         }
 
         /* ---------- СТРАНИЦА КОРЗИНЫ ---------- */
@@ -548,7 +545,7 @@
             transform: scale(0.97);
         }
 
-        /* ---------- СТРАНИЦЫ (ПЕРЕКЛЮЧЕНИЕ) ---------- */
+        /* ---------- СТРАНИЦЫ ---------- */
         .page {
             display: none;
         }
@@ -561,29 +558,35 @@
         @media (max-width: 380px) {
             .product-title { font-size: 0.9rem; }
             .price-cart-btn { padding: 4px 10px; font-size: 0.75rem; }
-            .floating-cart { padding: 12px 18px; font-size: 1rem; }
+            .category-card i { font-size: 1.8rem; }
         }
     </style>
 </head>
 <body>
     <!-- КОНТЕЙНЕР ДЛЯ СТРАНИЦ -->
     <div class="container">
-        <!-- СТРАНИЦА МЕНЮ (ГЛАВНАЯ) -->
-        <div id="menu-page" class="page active-page">
-            <!-- ШАПКА -->
+        <!-- ГЛАВНАЯ СТРАНИЦА -->
+        <div id="home-page" class="page active-page">
             <div class="header">
-                <div class="shop-title">SushiMoji</div>
-                <div class="shop-address">
-                    <i class="fas fa-map-pin"></i> Сатка, ул. 50 лет Октября, 22
-                </div>
+                <div class="shop-title">FitnesEDA</div>
             </div>
 
-            <!-- ЛИПКАЯ ПАНЕЛЬ ФИЛЬТРОВ (с кастомными иконками) -->
+            <!-- Сетка карточек-категорий -->
+            <div class="grid-2col" id="home-categories"></div>
+        </div>
+
+        <!-- СТРАНИЦА МЕНЮ -->
+        <div id="menu-page" class="page">
+            <div class="header">
+                <div class="shop-title">Меню</div>
+            </div>
+
+            <!-- Липкая панель фильтров -->
             <div class="filter-sticky">
                 <div class="filter-scroll" id="filter-scroll"></div>
             </div>
 
-            <!-- КОНТЕЙНЕР КАТЕГОРИЙ ТОВАРОВ -->
+            <!-- Контейнер категорий товаров -->
             <div id="categories-container"></div>
         </div>
 
@@ -624,17 +627,16 @@
         </div>
     </div>
 
-    <!-- ПЛАВАЮЩАЯ КНОПКА КОРЗИНЫ -->
-    <button class="floating-cart" id="floating-cart-btn">
-        <i class="fas fa-basket-shopping"></i>
-        <span class="cart-total" id="floating-cart-total">0 ₽</span>
-    </button>
-
-    <!-- НИЖНЯЯ НАВИГАЦИЯ (3 ПУНКТА) -->
+    <!-- НИЖНЯЯ НАВИГАЦИЯ -->
     <div class="bottom-nav">
-        <div class="nav-item active" data-page="menu-page"><i class="fas fa-home"></i><span>Главная</span></div>
+        <div class="nav-item" data-page="home-page"><i class="fas fa-home"></i><span>Главная</span></div>
         <div class="nav-item" data-page="menu-page"><i class="fas fa-utensils"></i><span>Меню</span></div>
         <div class="nav-item" data-page="profile"><i class="fas fa-user"></i><span>Профиль</span></div>
+        <div class="cart-widget" id="cart-widget">
+            <i class="fas fa-basket-shopping"></i>
+            <span>Корзина</span>
+            <span class="cart-price" id="cart-widget-total">0 ₽</span>
+        </div>
     </div>
 
     <script>
@@ -643,57 +645,97 @@
 
             // ---------- ДАННЫЕ ТОВАРОВ ----------
             const products = [
-                { id: 1, name: 'Запеченное Онигири с лососем', desc: 'Лосось, рис, соус унаги', weight: '220г', price: 440, category: 'sushi', img: 'https://images.unsplash.com/photo-1617196035154-1e7e6e28b0db?w=400&auto=format' },
-                { id: 2, name: 'Запеченное Онигири с курицей', desc: 'Курица, сыр, кунжут', weight: '210г', price: 289, category: 'sushi', img: 'https://images.unsplash.com/photo-1559410545-0bdcd187e52a?w=400&auto=format' },
-                { id: 3, name: 'Филадельфия лайт', desc: 'Лосось, сливочный сыр', weight: '180г', price: 430, category: 'rolls', img: 'https://images.unsplash.com/photo-1617196035154-1e7e6e28b0db?w=400&auto=format' },
-                { id: 4, name: 'Калифорния с крабом', desc: 'Краб-микс, авокадо', weight: '200г', price: 390, category: 'rolls', img: 'https://images.unsplash.com/photo-1559410545-0bdcd187e52a?w=400&auto=format' },
-                { id: 5, name: 'Острый рамен', desc: 'Лапша, свинина, яйцо', weight: '550мл', price: 350, category: 'soup', img: 'https://images.unsplash.com/photo-1585032226651-759b368d7246?w=400&auto=format' },
-                { id: 6, name: 'Мисо-суп с тофу', desc: 'Тофу, водоросли', weight: '300мл', price: 220, category: 'soup', img: 'https://images.unsplash.com/photo-1547592180-85f173990554?w=400&auto=format' },
+                // Пицца
+                { id: 1, name: 'Пепперони', desc: 'Острая пепперони, сыр', weight: '320г', price: 390, category: 'pizza', img: 'https://images.unsplash.com/photo-1604382354936-07c5d9983bd3?w=400&auto=format' },
+                { id: 2, name: 'Маргарита', desc: 'Сыр, базилик, томаты', weight: '300г', price: 340, category: 'pizza', img: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=400&auto=format' },
+                // Суши/роллы
+                { id: 3, name: 'Филадельфия', desc: 'Лосось, сливочный сыр', weight: '200г', price: 430, category: 'sushi', img: 'https://images.unsplash.com/photo-1617196035154-1e7e6e28b0db?w=400&auto=format' },
+                { id: 4, name: 'Калифорния', desc: 'Краб, авокадо, икра', weight: '210г', price: 390, category: 'sushi', img: 'https://images.unsplash.com/photo-1559410545-0bdcd187e52a?w=400&auto=format' },
+                // Закуски
+                { id: 5, name: 'Сырные палочки', desc: 'С соусом ранч', weight: '150г', price: 220, category: 'snacks', img: 'https://images.unsplash.com/photo-1531749668029-2db88e4276be?w=400&auto=format' },
+                { id: 6, name: 'Картофель фри', desc: 'Хрустящий', weight: '180г', price: 150, category: 'snacks', img: 'https://images.unsplash.com/photo-1573080496219-bb080dd4f877?w=400&auto=format' },
+                // Холодные напитки
+                { id: 7, name: 'Лимонад', desc: 'Малина-мята', weight: '400мл', price: 180, category: 'cold_drinks', img: 'https://images.unsplash.com/photo-1621930231178-9d540ba7debf?w=400&auto=format' },
+                { id: 8, name: 'Айс-кофе', desc: 'Кофе с молоком', weight: '300мл', price: 170, category: 'cold_drinks', img: 'https://images.unsplash.com/photo-1461023058943-07fcbe16d735?w=400&auto=format' },
+                // Горячие напитки
+                { id: 9, name: 'Капучино', desc: 'Молочная пена', weight: '200мл', price: 160, category: 'hot_drinks', img: 'https://images.unsplash.com/photo-1572442388796-11668a67e53d?w=400&auto=format' },
+                { id: 10, name: 'Эспрессо', desc: 'Крепкий', weight: '40мл', price: 99, category: 'hot_drinks', img: 'https://images.unsplash.com/photo-1610642372674-ffdf887a0c66?w=400&auto=format' },
+                // Десерты
+                { id: 11, name: 'Чизкейк', desc: 'Нью-Йорк', weight: '120г', price: 210, category: 'desserts', img: 'https://images.unsplash.com/photo-1524351199678-941a58a3df50?w=400&auto=format' },
+                { id: 12, name: 'Протеиновое печенье', desc: '3 шт, без сахара', weight: '90г', price: 150, category: 'desserts', img: 'https://images.unsplash.com/photo-1601820809541-3b9b10bff2df?w=400&auto=format' },
             ];
 
-            // Категории для фильтров (с иконками)
-            const filters = [
-                { id: 'sushi', name: '🍣 Онигири', icon: 'fa-solid fa-fish' },
-                { id: 'rolls', name: '🍚 Роллы', icon: 'fa-solid fa-egg' },
-                { id: 'soup', name: '🍜 Супы', icon: 'fa-solid fa-mug-saucer' },
-                { id: 'sets', name: '🍱 Сеты', icon: 'fa-solid fa-utensils' },
-                { id: 'drinks', name: '🥤 Напитки', icon: 'fa-solid fa-mug-hot' },
-            ];
-
-            // Категории для группировки товаров (только те, что есть)
+            // Категории для главной и для фильтров (с иконками)
             const categories = [
-                { id: 'sushi', title: '🍣 Онигири' },
-                { id: 'rolls', title: '🍚 Роллы' },
-                { id: 'soup', title: '🍜 Супы' },
+                { id: 'pizza', name: 'Пицца', icon: 'fa-solid fa-pizza-slice' },
+                { id: 'sushi', name: 'Суши / роллы', icon: 'fa-solid fa-fish' },
+                { id: 'snacks', name: 'Закуски', icon: 'fa-solid fa-bowl-food' },
+                { id: 'cold_drinks', name: 'Холодные напитки', icon: 'fa-solid fa-martini-glass-citrus' },
+                { id: 'hot_drinks', name: 'Горячие напитки', icon: 'fa-solid fa-mug-hot' },
+                { id: 'desserts', name: 'Десерты', icon: 'fa-solid fa-cake-candles' },
             ];
 
-            // ---------- СОСТОЯНИЕ КОРЗИНЫ (MAP id -> quantity) ----------
+            // Состояние корзины
             let cart = new Map();
             try {
-                const saved = localStorage.getItem('sushimoji_cart');
+                const saved = localStorage.getItem('fitneseda_cart');
                 if (saved) cart = new Map(Object.entries(JSON.parse(saved)).map(([k, v]) => [parseInt(k), v]));
             } catch (e) {}
 
-            let persons = 1; // количество персон для страницы заказа
+            let persons = 1; // персоны
 
             // ---------- ФУНКЦИИ СОХРАНЕНИЯ ----------
             function saveCart() {
                 const obj = Object.fromEntries(cart);
-                localStorage.setItem('sushimoji_cart', JSON.stringify(obj));
-                updateFloatingTotal();
+                localStorage.setItem('fitneseda_cart', JSON.stringify(obj));
+                updateCartWidget();
                 renderCartPage(); // если открыта страница корзины
             }
 
-            // ---------- РЕНДЕР ФИЛЬТРОВ ----------
+            // ---------- ОБНОВЛЕНИЕ ВИДЖЕТА КОРЗИНЫ ----------
+            function updateCartWidget() {
+                const total = Array.from(cart.entries()).reduce((acc, [id, qty]) => {
+                    const prod = products.find(p => p.id === id);
+                    return acc + (prod?.price || 0) * qty;
+                }, 0);
+                document.getElementById('cart-widget-total').innerText = total + ' ₽';
+            }
+
+            // ---------- РЕНДЕР ГЛАВНОЙ (КАРТОЧКИ КАТЕГОРИЙ) ----------
+            function renderHome() {
+                const container = document.getElementById('home-categories');
+                container.innerHTML = categories.map(cat => `
+                    <div class="category-card" data-category="${cat.id}">
+                        <i class="fas ${cat.icon}"></i>
+                        <span>${cat.name}</span>
+                    </div>
+                `).join('');
+
+                // При клике на карточку переходим в меню и скроллим к категории
+                document.querySelectorAll('.category-card').forEach(card => {
+                    card.addEventListener('click', () => {
+                        const catId = card.dataset.category;
+                        // Активируем страницу меню через навигацию
+                        document.querySelector('.nav-item[data-page="menu-page"]').click();
+                        // Небольшая задержка для рендера
+                        setTimeout(() => {
+                            const section = document.getElementById(catId);
+                            if (section) section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        }, 100);
+                    });
+                });
+            }
+
+            // ---------- РЕНДЕР ФИЛЬТРОВ МЕНЮ ----------
             function renderFilters() {
                 const container = document.getElementById('filter-scroll');
-                container.innerHTML = filters.map(f => 
-                    `<div class="filter-chip" data-filter="${f.id}"><i class="fas ${f.icon}"></i>${f.name}</div>`
+                container.innerHTML = categories.map(cat => 
+                    `<div class="filter-chip" data-filter="${cat.id}"><i class="fas ${cat.icon}"></i>${cat.name}</div>`
                 ).join('');
                 document.querySelectorAll('.filter-chip')[0]?.classList.add('active-filter');
             }
 
-            // ---------- РЕНДЕР КАРТОЧЕК ТОВАРОВ (ПО КАТЕГОРИЯМ) ----------
+            // ---------- РЕНДЕР МЕНЮ (ТОВАРЫ ПО КАТЕГОРИЯМ) ----------
             function renderMenu() {
                 const container = document.getElementById('categories-container');
                 let html = '';
@@ -701,8 +743,8 @@
                     const catProducts = products.filter(p => p.category === cat.id);
                     if (!catProducts.length) return;
                     html += `<div id="${cat.id}" class="category-section">`;
-                    html += `<div class="category-header">${cat.title}</div>`;
-                    html += `<div class="products-grid">`;
+                    html += `<div class="category-header">${cat.name}</div>`;
+                    html += `<div class="grid-2col">`;
                     catProducts.forEach(prod => {
                         const qty = cart.get(prod.id) || 0;
                         const showIncrement = qty > 0;
@@ -714,7 +756,7 @@
                         html += `<div class="product-footer">`;
                         html += `<span class="product-price">${prod.price} ₽</span>`;
                         html += `<div class="cart-action" data-prod-id="${prod.id}">`;
-                        // Кнопка с ценой и иконкой корзины (без текста)
+                        // Кнопка с ценой и иконкой
                         html += `<button class="price-cart-btn ${showIncrement ? 'hidden-control' : ''}" data-id="${prod.id}"><i class="fas fa-shopping-cart"></i> ${prod.price} ₽</button>`;
                         html += `<div class="quantity-control ${!showIncrement ? 'hidden-control' : ''}" data-id="${prod.id}">`;
                         html += `<button class="qty-btn dec-btn" data-id="${prod.id}">−</button>`;
@@ -791,13 +833,20 @@
                 }
             }
 
-            // ---------- ОБНОВЛЕНИЕ СУММЫ В ПЛАВАЮЩЕЙ КОРЗИНЕ ----------
-            function updateFloatingTotal() {
-                const total = Array.from(cart.entries()).reduce((acc, [id, qty]) => {
-                    const prod = products.find(p => p.id === id);
-                    return acc + (prod?.price || 0) * qty;
-                }, 0);
-                document.getElementById('floating-cart-total').innerText = total + ' ₽';
+            // ---------- ФИЛЬТРЫ: ПРОКРУТКА ----------
+            function initFilterClicks() {
+                const chips = document.querySelectorAll('.filter-chip');
+                chips.forEach(chip => {
+                    chip.addEventListener('click', function() {
+                        const filterId = this.dataset.filter;
+                        chips.forEach(c => c.classList.remove('active-filter'));
+                        this.classList.add('active-filter');
+                        const section = document.getElementById(filterId);
+                        if (section) {
+                            section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        }
+                    });
+                });
             }
 
             // ---------- РЕНДЕР СТРАНИЦЫ КОРЗИНЫ ----------
@@ -831,14 +880,13 @@
                     });
                     container.innerHTML = html;
 
-                    // обработчики на корзине
                     document.querySelectorAll('.cart-inc').forEach(btn => {
                         btn.addEventListener('click', (e) => {
                             const id = parseInt(e.currentTarget.dataset.id);
                             cart.set(id, (cart.get(id) || 0) + 1);
                             saveCart();
                             renderCartPage();
-                            updateUIForProduct(id); // обновить карточку в меню
+                            updateUIForProduct(id);
                         });
                     });
                     document.querySelectorAll('.cart-dec').forEach(btn => {
@@ -854,7 +902,6 @@
                     });
                 }
 
-                // обновить итог в корзине
                 const total = Array.from(cart.entries()).reduce((acc, [id, qty]) => {
                     const prod = products.find(p => p.id === id);
                     return acc + (prod?.price || 0) * qty;
@@ -862,53 +909,44 @@
                 document.getElementById('cart-total-amount').innerText = total + ' ₽';
             }
 
-            // ---------- ФИЛЬТРЫ: ПРОКРУТКА К РАЗДЕЛУ ----------
-            function initFilterClicks() {
-                const chips = document.querySelectorAll('.filter-chip');
-                chips.forEach(chip => {
-                    chip.addEventListener('click', function() {
-                        const filterId = this.dataset.filter;
-                        chips.forEach(c => c.classList.remove('active-filter'));
-                        this.classList.add('active-filter');
-                        const section = document.getElementById(filterId);
-                        if (section) {
-                            section.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                        }
-                    });
-                });
-            }
-
             // ---------- ПЕРЕКЛЮЧЕНИЕ СТРАНИЦ ----------
             function initNavigation() {
+                const homePage = document.getElementById('home-page');
                 const menuPage = document.getElementById('menu-page');
                 const cartPage = document.getElementById('cart-page');
-                const floatingBtn = document.getElementById('floating-cart-btn');
-                const backBtn = document.getElementById('back-to-menu');
                 const navItems = document.querySelectorAll('.nav-item');
+                const cartWidget = document.getElementById('cart-widget');
+                const backBtn = document.getElementById('back-to-menu');
 
-                floatingBtn.addEventListener('click', () => {
+                function setActivePage(pageId) {
+                    homePage.classList.remove('active-page');
                     menuPage.classList.remove('active-page');
-                    cartPage.classList.add('active-page');
+                    cartPage.classList.remove('active-page');
+                    document.getElementById(pageId).classList.add('active-page');
+                    navItems.forEach(n => n.classList.remove('active'));
+                    if (pageId === 'home-page') navItems[0].classList.add('active');
+                    if (pageId === 'menu-page') navItems[1].classList.add('active');
+                    if (pageId === 'profile') alert('Профиль в разработке');
+                }
+
+                navItems.forEach(item => {
+                    item.addEventListener('click', () => {
+                        const page = item.dataset.page;
+                        if (page === 'profile') {
+                            alert('Профиль в разработке');
+                            return;
+                        }
+                        setActivePage(page);
+                    });
+                });
+
+                cartWidget.addEventListener('click', () => {
+                    setActivePage('cart-page');
                     renderCartPage();
                 });
 
                 backBtn.addEventListener('click', () => {
-                    cartPage.classList.remove('active-page');
-                    menuPage.classList.add('active-page');
-                });
-
-                navItems.forEach(item => {
-                    item.addEventListener('click', function() {
-                        const page = this.dataset.page;
-                        navItems.forEach(n => n.classList.remove('active'));
-                        this.classList.add('active');
-                        if (page === 'menu-page') {
-                            menuPage.classList.add('active-page');
-                            cartPage.classList.remove('active-page');
-                        } else if (page === 'profile') {
-                            alert('Профиль в разработке');
-                        }
-                    });
+                    setActivePage('menu-page');
                 });
             }
 
@@ -933,7 +971,6 @@
                 }
                 const comment = document.getElementById('order-comment').value;
                 alert(`Заказ оформлен!\nПерсон: ${persons}\nКомментарий: ${comment || '—'}`);
-                // очистить корзину
                 cart.clear();
                 saveCart();
                 document.getElementById('back-to-menu').click();
@@ -942,12 +979,13 @@
 
             // ---------- СТАРТ ----------
             window.addEventListener('DOMContentLoaded', () => {
+                renderHome();
                 renderFilters();
                 renderMenu();
                 initFilterClicks();
                 initNavigation();
                 initPersons();
-                updateFloatingTotal();
+                updateCartWidget();
             });
         })();
     </script>
