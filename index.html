@@ -1,3 +1,4 @@
+<!-- index.html -->
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -10,6 +11,7 @@
             padding: 0;
             box-sizing: border-box;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            -webkit-tap-highlight-color: transparent; /* убирает синие обводки на мобильных */
         }
         body {
             background: linear-gradient(145deg, #f8f6f2 0%, #f0ede8 100%);
@@ -19,55 +21,32 @@
             justify-content: center;
             padding: 20px;
         }
-        /* Спиннер */
-        .loader-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(248, 246, 242, 0.9);
-            backdrop-filter: blur(5px);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            transition: opacity 0.3s ease;
-        }
-        .loader {
-            width: 50px;
-            height: 50px;
-            border: 4px solid #e0e0e0;
-            border-top: 4px solid #FF8C00;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        /* Заголовок в левом верхнем углу */
+        .page-header {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(145deg, #202b38, #2a3d4e);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
         .auth-container {
             background: white;
             border-radius: 48px;
             box-shadow: 0 25px 50px -12px rgba(0,0,0,0.15);
             width: 100%;
-            max-width: 480px;
-            padding: 40px 32px;
+            max-width: 460px;
+            padding: 32px 28px;
             border: 1px solid rgba(255,140,0,0.1);
-        }
-        .logo {
-            font-size: 2.5rem;
-            font-weight: 700;
-            background: linear-gradient(145deg, #202b38, #2a3d4e);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            text-align: center;
-            margin-bottom: 32px;
+            margin-top: 40px; /* отступ для заголовка */
         }
         .tabs {
             display: flex;
             gap: 8px;
-            margin-bottom: 32px;
+            margin-bottom: 24px;
             background: #f1f3f5;
             padding: 6px;
             border-radius: 60px;
@@ -81,19 +60,33 @@
             cursor: pointer;
             transition: 0.2s;
             color: #5e6b76;
+            outline: none;
+            user-select: none;
         }
         .tab.active {
             background: #FF8C00;
             color: white;
             box-shadow: 0 6px 14px rgba(255,140,0,0.2);
         }
+        /* Контейнер форм с анимацией */
+        .form-container {
+            position: relative;
+            min-height: 320px;
+        }
         .form {
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            gap: 18px;
+            transition: opacity 0.25s ease, transform 0.3s ease;
+            position: absolute;
+            width: 100%;
+            top: 0;
+            left: 0;
         }
         .form.hidden {
-            display: none;
+            opacity: 0;
+            transform: translateX(20px);
+            pointer-events: none;
         }
         .input-group {
             display: flex;
@@ -105,6 +98,44 @@
             font-size: 0.9rem;
             color: #2b3b4a;
         }
+        /* Поле ввода с глазком */
+        .password-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        .password-wrapper input {
+            flex: 1;
+            padding: 16px 20px;
+            border: 2px solid #eef2f6;
+            border-radius: 30px;
+            font-size: 1rem;
+            transition: 0.2s;
+            background: #fbfcfd;
+            outline: none; /* убираем стандартную обводку */
+        }
+        .password-wrapper input:focus {
+            border-color: #FF8C00;
+            box-shadow: 0 0 0 3px rgba(255,140,0,0.1);
+        }
+        .toggle-password {
+            position: absolute;
+            right: 16px;
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            color: #8f9aa4;
+            cursor: pointer;
+            padding: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: color 0.2s;
+            outline: none;
+        }
+        .toggle-password:active {
+            color: #FF8C00;
+        }
         .input-group input {
             padding: 16px 20px;
             border: 2px solid #eef2f6;
@@ -112,11 +143,11 @@
             font-size: 1rem;
             transition: 0.2s;
             background: #fbfcfd;
+            outline: none;
         }
         .input-group input:focus {
             border-color: #FF8C00;
-            outline: none;
-            box-shadow: 0 0 0 4px rgba(255,140,0,0.1);
+            box-shadow: 0 0 0 3px rgba(255,140,0,0.1);
         }
         .btn {
             background: #FF8C00;
@@ -128,8 +159,9 @@
             font-size: 1.1rem;
             cursor: pointer;
             transition: 0.15s;
-            margin-top: 16px;
+            margin-top: 8px;
             box-shadow: 0 8px 20px rgba(255,140,0,0.2);
+            outline: none;
         }
         .btn:active {
             transform: scale(0.97);
@@ -147,80 +179,108 @@
             margin-top: 4px;
             padding-left: 16px;
         }
-        /* Контент изначально скрыт */
-        .auth-content {
-            display: none;
+        /* Скрытие стандартных обводок */
+        button, input, .tab {
+            -webkit-tap-highlight-color: transparent;
+            outline: none;
+        }
+        /* Адаптация для маленьких экранов */
+        @media (max-width: 480px) {
+            .page-header {
+                font-size: 1.8rem;
+                top: 12px;
+                left: 16px;
+            }
+            .auth-container {
+                padding: 24px 20px;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="loader-container" id="loader">
-        <div class="loader"></div>
-    </div>
+    <div class="page-header">FitnesEDA</div>
 
-    <div class="auth-container" id="authContainer" style="display: none;">
-        <div class="logo">FitnesEDA</div>
+    <div class="auth-container">
         <div class="tabs">
             <div class="tab active" id="login-tab">Вход</div>
             <div class="tab" id="register-tab">Регистрация</div>
         </div>
 
-        <!-- Форма входа -->
-        <div id="login-form" class="form">
-            <div class="input-group">
-                <label>Email</label>
-                <input type="email" id="login-email" placeholder="example@mail.ru">
+        <div class="form-container">
+            <!-- Форма входа -->
+            <div id="login-form" class="form">
+                <div class="input-group">
+                    <label>Логин или почта</label>
+                    <input type="text" id="login-email" placeholder="example@mail.ru или nickname">
+                </div>
+                <div class="input-group">
+                    <label>Пароль</label>
+                    <div class="password-wrapper">
+                        <input type="password" id="login-password" placeholder="••••••••">
+                        <button type="button" class="toggle-password" id="toggle-login-password">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="error" id="login-error"></div>
+                <button class="btn" id="login-btn">Войти</button>
+                <div class="info-text">Или <strong style="color:#FF8C00;" id="switch-to-reg">зарегистрируйтесь</strong></div>
             </div>
-            <div class="input-group">
-                <label>Пароль</label>
-                <input type="password" id="login-password" placeholder="••••••••">
-            </div>
-            <div class="error" id="login-error"></div>
-            <button class="btn" id="login-btn">Войти</button>
-            <div class="info-text">Или <strong style="color:#FF8C00;" id="switch-to-reg">зарегистрируйтесь</strong></div>
-        </div>
 
-        <!-- Форма регистрации -->
-        <div id="register-form" class="form hidden">
-            <div class="input-group">
-                <label>Email</label>
-                <input type="email" id="reg-email" placeholder="example@mail.ru">
+            <!-- Форма регистрации -->
+            <div id="register-form" class="form hidden">
+                <div class="input-group">
+                    <label>Логин или почта</label>
+                    <input type="text" id="reg-email" placeholder="example@mail.ru">
+                </div>
+                <div class="input-group">
+                    <label>Пароль</label>
+                    <div class="password-wrapper">
+                        <input type="password" id="reg-password" placeholder="минимум 6 символов">
+                        <button type="button" class="toggle-password" id="toggle-reg-password">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>Повторите пароль</label>
+                    <div class="password-wrapper">
+                        <input type="password" id="reg-password2" placeholder="••••••••">
+                        <button type="button" class="toggle-password" id="toggle-reg-password2">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="error" id="register-error"></div>
+                <button class="btn" id="register-btn">Зарегистрироваться</button>
+                <div class="info-text">Уже есть аккаунт? <strong style="color:#FF8C00;" id="switch-to-login">Войти</strong></div>
             </div>
-            <div class="input-group">
-                <label>Пароль</label>
-                <input type="password" id="reg-password" placeholder="минимум 6 символов">
-            </div>
-            <div class="input-group">
-                <label>Повторите пароль</label>
-                <input type="password" id="reg-password2" placeholder="••••••••">
-            </div>
-            <div class="error" id="register-error"></div>
-            <button class="btn" id="register-btn">Зарегистрироваться</button>
-            <div class="info-text">Уже есть аккаунт? <strong style="color:#FF8C00;" id="switch-to-login">Войти</strong></div>
         </div>
     </div>
 
+    <!-- Font Awesome для иконок глазков -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
     <script>
         (function() {
-            // Утилиты для cookies
+            // Утилиты cookies
             function getCookie(name) {
                 const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
                 return match ? decodeURIComponent(match[2]) : null;
             }
-
             function setCookie(name, value, minutes) {
                 const d = new Date();
                 d.setTime(d.getTime() + (minutes * 60 * 1000));
                 document.cookie = name + "=" + encodeURIComponent(value) + ";expires=" + d.toUTCString() + ";path=/";
             }
 
-            function deleteCookie(name) {
-                document.cookie = name + '=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+            // Если уже авторизован — переходим на main
+            if (getCookie('auth')) {
+                window.location.href = 'main.html';
+                return;
             }
 
             // Элементы
-            const loader = document.getElementById('loader');
-            const authContainer = document.getElementById('authContainer');
             const loginTab = document.getElementById('login-tab');
             const registerTab = document.getElementById('register-tab');
             const loginForm = document.getElementById('login-form');
@@ -228,29 +288,7 @@
             const switchToReg = document.getElementById('switch-to-reg');
             const switchToLogin = document.getElementById('switch-to-login');
 
-            // Проверка авторизации
-            function checkAuth() {
-                if (getCookie('auth')) {
-                    // Если авторизован, через небольшую задержку редиректим на main
-                    setTimeout(() => {
-                        window.location.href = 'main.html';
-                    }, 500); // небольшая задержка, чтобы спиннер покрутился
-                } else {
-                    // Не авторизован — скрываем спиннер, показываем формы
-                    setTimeout(() => {
-                        loader.style.opacity = '0';
-                        setTimeout(() => {
-                            loader.style.display = 'none';
-                            authContainer.style.display = 'block';
-                        }, 300);
-                    }, 300); // имитация загрузки
-                }
-            }
-
-            // Запускаем проверку после загрузки DOM
-            window.addEventListener('DOMContentLoaded', checkAuth);
-
-            // Переключение табов
+            // Переключение табов с анимацией
             function setActiveTab(tab) {
                 if (tab === 'login') {
                     loginTab.classList.add('active');
@@ -269,6 +307,22 @@
             registerTab.addEventListener('click', () => setActiveTab('register'));
             switchToReg.addEventListener('click', () => setActiveTab('register'));
             switchToLogin.addEventListener('click', () => setActiveTab('login'));
+
+            // Функция для переключения видимости пароля
+            function setupPasswordToggle(toggleId, inputId) {
+                const toggle = document.getElementById(toggleId);
+                const input = document.getElementById(inputId);
+                if (!toggle || !input) return;
+                toggle.addEventListener('click', function() {
+                    const type = input.getAttribute('type') === 'password' ? 'text' : 'password';
+                    input.setAttribute('type', type);
+                    this.innerHTML = type === 'password' ? '<i class="fas fa-eye"></i>' : '<i class="fas fa-eye-slash"></i>';
+                });
+            }
+
+            setupPasswordToggle('toggle-login-password', 'login-password');
+            setupPasswordToggle('toggle-reg-password', 'reg-password');
+            setupPasswordToggle('toggle-reg-password2', 'reg-password2');
 
             // Регистрация
             document.getElementById('register-btn').addEventListener('click', function() {
@@ -290,8 +344,7 @@
                     return;
                 }
 
-                // Сохраняем пользователя в куку на 60 минут
-                const userData = { email: email, password: pass };
+                const userData = { login: email, password: pass }; // сохраняем логин (может быть email или ник)
                 setCookie('user', JSON.stringify(userData), 60);
 
                 alert('Регистрация успешна! Теперь можно войти.');
@@ -303,12 +356,12 @@
 
             // Вход
             document.getElementById('login-btn').addEventListener('click', function() {
-                const email = document.getElementById('login-email').value.trim();
+                const login = document.getElementById('login-email').value.trim();
                 const pass = document.getElementById('login-password').value;
                 const errorEl = document.getElementById('login-error');
 
-                if (!email || !pass) {
-                    errorEl.textContent = 'Введите email и пароль';
+                if (!login || !pass) {
+                    errorEl.textContent = 'Введите логин/почту и пароль';
                     return;
                 }
 
@@ -320,17 +373,14 @@
 
                 try {
                     const user = JSON.parse(userCookie);
-                    if (user.email === email && user.password === pass) {
-                        // Успешный вход: ставим куку auth на 2 минуты
-                        setCookie('auth', 'true', 2);
-                        // Показываем спиннер и переходим
-                        loader.style.display = 'flex';
-                        loader.style.opacity = '1';
+                    if (user.login === login && user.password === pass) {
+                        setCookie('auth', 'true', 2); // 2 минуты
+                        // Небольшая задержка для плавности
                         setTimeout(() => {
                             window.location.href = 'main.html';
-                        }, 500);
+                        }, 200);
                     } else {
-                        errorEl.textContent = 'Неверный email или пароль';
+                        errorEl.textContent = 'Неверный логин или пароль';
                     }
                 } catch (e) {
                     errorEl.textContent = 'Ошибка данных. Зарегистрируйтесь заново.';
