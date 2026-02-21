@@ -1,4 +1,3 @@
-<!-- main.html -->
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -25,6 +24,33 @@
             min-height: 100vh;
         }
 
+        /* Спиннер */
+        .loader-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #f8f6f2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            transition: opacity 0.3s ease;
+        }
+        .loader {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #e0e0e0;
+            border-top: 4px solid #FF8C00;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
         .container {
             max-width: 600px;
             margin: 0 auto;
@@ -46,7 +72,7 @@
             background-clip: text;
         }
 
-        /* ---------- ЛИПКАЯ ПАНЕЛЬ ФИЛЬТРОВ (только в меню) ---------- */
+        /* ---------- ЛИПКАЯ ПАНЕЛЬ ФИЛЬТРОВ ---------- */
         .filter-sticky {
             position: sticky;
             top: 0;
@@ -608,7 +634,11 @@
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class="loader-container" id="loader">
+        <div class="loader"></div>
+    </div>
+
+    <div class="container" id="mainContent" style="display: none;">
         <!-- ГЛАВНАЯ СТРАНИЦА -->
         <div id="home-page" class="page active-page">
             <div class="header">
@@ -673,8 +703,8 @@
         </div>
     </div>
 
-    <!-- НИЖНЯЯ НАВИГАЦИЯ -->
-    <div class="bottom-nav">
+    <!-- НИЖНЯЯ НАВИГАЦИЯ (будет показана после загрузки) -->
+    <div class="bottom-nav" id="bottomNav" style="display: none;">
         <div class="nav-item active" data-page="home-page"><i class="fas fa-home"></i><span>Главная</span></div>
         <div class="nav-item" data-page="menu-page"><i class="fas fa-utensils"></i><span>Меню</span></div>
         <div class="nav-item" data-page="profile-page"><i class="fas fa-user"></i><span>Профиль</span></div>
@@ -687,7 +717,7 @@
 
     <script>
         (function() {
-            // ---------- УТИЛИТЫ COOKIES ----------
+            // Утилиты cookies
             function getCookie(name) {
                 const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
                 return match ? decodeURIComponent(match[2]) : null;
@@ -697,342 +727,356 @@
                 document.cookie = name + '=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
             }
 
+            const loader = document.getElementById('loader');
+            const mainContent = document.getElementById('mainContent');
+            const bottomNav = document.getElementById('bottomNav');
+
             // Проверка авторизации
-            if (!getCookie('auth')) {
-                window.location.href = 'index.html';
-                return;
-            }
-
-            // Получаем email из cookie user
-            let userEmail = 'Пользователь';
-            try {
-                const userData = JSON.parse(getCookie('user') || '{}');
-                if (userData.email) userEmail = userData.email;
-            } catch (e) {}
-
-            // ---------- ДАННЫЕ ТОВАРОВ ----------
-            const products = [
-                { id: 1, name: 'Пепперони', desc: 'Острая пепперони, сыр', weight: '320г', price: 390, category: 'pizza', img: 'https://images.unsplash.com/photo-1604382354936-07c5d9983bd3?w=400&auto=format' },
-                { id: 2, name: 'Маргарита', desc: 'Сыр, базилик, томаты', weight: '300г', price: 340, category: 'pizza', img: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=400&auto=format' },
-                { id: 3, name: 'Филадельфия', desc: 'Лосось, сливочный сыр', weight: '200г', price: 430, category: 'sushi', img: 'https://images.unsplash.com/photo-1617196035154-1e7e6e28b0db?w=400&auto=format' },
-                { id: 4, name: 'Калифорния', desc: 'Краб, авокадо, икра', weight: '210г', price: 390, category: 'sushi', img: 'https://images.unsplash.com/photo-1559410545-0bdcd187e52a?w=400&auto=format' },
-                { id: 5, name: 'Сырные палочки', desc: 'С соусом ранч', weight: '150г', price: 220, category: 'snacks', img: 'https://images.unsplash.com/photo-1531749668029-2db88e4276be?w=400&auto=format' },
-                { id: 6, name: 'Картофель фри', desc: 'Хрустящий', weight: '180г', price: 150, category: 'snacks', img: 'https://images.unsplash.com/photo-1573080496219-bb080dd4f877?w=400&auto=format' },
-                { id: 7, name: 'Лимонад', desc: 'Малина-мята', weight: '400мл', price: 180, category: 'cold_drinks', img: 'https://images.unsplash.com/photo-1621930231178-9d540ba7debf?w=400&auto=format' },
-                { id: 8, name: 'Айс-кофе', desc: 'Кофе с молоком', weight: '300мл', price: 170, category: 'cold_drinks', img: 'https://images.unsplash.com/photo-1461023058943-07fcbe16d735?w=400&auto=format' },
-                { id: 9, name: 'Капучино', desc: 'Молочная пена', weight: '200мл', price: 160, category: 'hot_drinks', img: 'https://images.unsplash.com/photo-1572442388796-11668a67e53d?w=400&auto=format' },
-                { id: 10, name: 'Эспрессо', desc: 'Крепкий', weight: '40мл', price: 99, category: 'hot_drinks', img: 'https://images.unsplash.com/photo-1610642372674-ffdf887a0c66?w=400&auto=format' },
-                { id: 11, name: 'Чизкейк', desc: 'Нью-Йорк', weight: '120г', price: 210, category: 'desserts', img: 'https://images.unsplash.com/photo-1524351199678-941a58a3df50?w=400&auto=format' },
-                { id: 12, name: 'Протеиновое печенье', desc: '3 шт, без сахара', weight: '90г', price: 150, category: 'desserts', img: 'https://images.unsplash.com/photo-1601820809541-3b9b10bff2df?w=400&auto=format' },
-            ];
-
-            const categories = [
-                { id: 'pizza', name: 'Пицца', icon: 'fa-solid fa-pizza-slice' },
-                { id: 'sushi', name: 'Суши / роллы', icon: 'fa-solid fa-fish' },
-                { id: 'snacks', name: 'Закуски', icon: 'fa-solid fa-bowl-food' },
-                { id: 'cold_drinks', name: 'Холодные напитки', icon: 'fa-solid fa-martini-glass-citrus' },
-                { id: 'hot_drinks', name: 'Горячие напитки', icon: 'fa-solid fa-mug-hot' },
-                { id: 'desserts', name: 'Десерты', icon: 'fa-solid fa-cake-candles' },
-            ];
-
-            // Состояние корзины
-            let cart = new Map();
-            try {
-                const saved = localStorage.getItem('fitneseda_cart');
-                if (saved) cart = new Map(Object.entries(JSON.parse(saved)).map(([k, v]) => [parseInt(k), v]));
-            } catch (e) {}
-
-            let persons = 1;
-
-            function saveCart() {
-                const obj = Object.fromEntries(cart);
-                localStorage.setItem('fitneseda_cart', JSON.stringify(obj));
-                updateCartWidget();
-                renderCartPage();
-            }
-
-            function updateCartWidget() {
-                const total = Array.from(cart.entries()).reduce((acc, [id, qty]) => {
-                    const prod = products.find(p => p.id === id);
-                    return acc + (prod?.price || 0) * qty;
-                }, 0);
-                document.getElementById('cart-widget-total').innerText = total + ' ₽';
-            }
-
-            // ---------- РЕНДЕР ГЛАВНОЙ ----------
-            function renderHome() {
-                const container = document.getElementById('home-categories');
-                container.innerHTML = categories.map(cat => `
-                    <div class="category-card" data-category="${cat.id}">
-                        <i class="fas ${cat.icon}"></i>
-                        <span>${cat.name}</span>
-                    </div>
-                `).join('');
-                document.querySelectorAll('.category-card').forEach(card => {
-                    card.addEventListener('click', () => {
-                        document.querySelector('.nav-item[data-page="menu-page"]').click();
-                        setTimeout(() => {
-                            const section = document.getElementById(catId);
-                            if (section) section.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                        }, 100);
-                    });
-                });
-            }
-
-            // ---------- РЕНДЕР ФИЛЬТРОВ ----------
-            function renderFilters() {
-                const container = document.getElementById('filter-scroll');
-                container.innerHTML = categories.map(cat => 
-                    `<div class="filter-chip" data-filter="${cat.id}"><i class="fas ${cat.icon}"></i>${cat.name}</div>`
-                ).join('');
-                document.querySelectorAll('.filter-chip')[0]?.classList.add('active-filter');
-            }
-
-            // ---------- РЕНДЕР МЕНЮ ----------
-            function renderMenu() {
-                const container = document.getElementById('categories-container');
-                let html = '';
-                categories.forEach(cat => {
-                    const catProducts = products.filter(p => p.category === cat.id);
-                    if (!catProducts.length) return;
-                    html += `<div id="${cat.id}" class="category-section">`;
-                    html += `<div class="category-header">${cat.name}</div>`;
-                    html += `<div class="grid-2col">`;
-                    catProducts.forEach(prod => {
-                        const qty = cart.get(prod.id) || 0;
-                        const showIncrement = qty > 0;
-                        html += `<div class="product-card" data-id="${prod.id}">`;
-                        html += `<div class="product-img" style="background-image: url('${prod.img}');"></div>`;
-                        html += `<div class="product-info">`;
-                        html += `<div class="product-title">${prod.name}</div>`;
-                        html += `<div class="product-desc">${prod.desc} <span class="product-weight">${prod.weight}</span></div>`;
-                        html += `<div class="product-footer">`;
-                        html += `<span class="product-price">${prod.price} ₽</span>`;
-                        html += `<div class="cart-action" data-prod-id="${prod.id}">`;
-                        html += `<button class="price-cart-btn ${showIncrement ? 'hidden-control' : ''}" data-id="${prod.id}"><i class="fas fa-shopping-cart"></i> ${prod.price} ₽</button>`;
-                        html += `<div class="quantity-control ${!showIncrement ? 'hidden-control' : ''}" data-id="${prod.id}">`;
-                        html += `<button class="qty-btn dec-btn" data-id="${prod.id}">−</button>`;
-                        html += `<span class="qty-value" id="qty-${prod.id}">${qty}</span>`;
-                        html += `<button class="qty-btn inc-btn" data-id="${prod.id}">+</button>`;
-                        html += `</div></div></div></div></div>`;
-                    });
-                    html += `</div></div>`;
-                });
-                container.innerHTML = html;
-                attachCartEvents();
-            }
-
-            function attachCartEvents() {
-                document.querySelectorAll('.price-cart-btn').forEach(btn => {
-                    btn.removeEventListener('click', handleAdd);
-                    btn.addEventListener('click', handleAdd);
-                });
-                document.querySelectorAll('.inc-btn').forEach(btn => {
-                    btn.removeEventListener('click', handleInc);
-                    btn.addEventListener('click', handleInc);
-                });
-                document.querySelectorAll('.dec-btn').forEach(btn => {
-                    btn.removeEventListener('click', handleDec);
-                    btn.addEventListener('click', handleDec);
-                });
-            }
-
-            function handleAdd(e) {
-                e.stopPropagation();
-                const prodId = parseInt(e.currentTarget.dataset.id);
-                cart.set(prodId, (cart.get(prodId) || 0) + 1);
-                saveCart();
-                updateUIForProduct(prodId);
-            }
-
-            function handleInc(e) {
-                e.stopPropagation();
-                const prodId = parseInt(e.currentTarget.dataset.id);
-                const qty = cart.get(prodId) || 0;
-                cart.set(prodId, qty + 1);
-                saveCart();
-                updateUIForProduct(prodId);
-            }
-
-            function handleDec(e) {
-                e.stopPropagation();
-                const prodId = parseInt(e.currentTarget.dataset.id);
-                const qty = cart.get(prodId) || 0;
-                if (qty <= 1) cart.delete(prodId);
-                else cart.set(prodId, qty - 1);
-                saveCart();
-                updateUIForProduct(prodId);
-            }
-
-            function updateUIForProduct(prodId) {
-                const qtySpan = document.getElementById(`qty-${prodId}`);
-                const newQty = cart.get(prodId) || 0;
-                if (qtySpan) qtySpan.innerText = newQty;
-                const cartAction = document.querySelector(`.cart-action[data-prod-id="${prodId}"]`);
-                if (!cartAction) return;
-                const addBtn = cartAction.querySelector('.price-cart-btn');
-                const qtyCtrl = cartAction.querySelector('.quantity-control');
-                if (newQty > 0) {
-                    addBtn?.classList.add('hidden-control');
-                    qtyCtrl?.classList.remove('hidden-control');
-                    qtyCtrl.style.animation = 'none';
-                    qtyCtrl.offsetHeight;
-                    qtyCtrl.style.animation = 'pop 0.2s ease';
+            function checkAuth() {
+                if (!getCookie('auth')) {
+                    // Не авторизован — редирект на index
+                    setTimeout(() => {
+                        window.location.href = 'index.html';
+                    }, 500);
                 } else {
-                    addBtn?.classList.remove('hidden-control');
-                    qtyCtrl?.classList.add('hidden-control');
+                    // Авторизован — показываем контент
+                    setTimeout(() => {
+                        loader.style.opacity = '0';
+                        setTimeout(() => {
+                            loader.style.display = 'none';
+                            mainContent.style.display = 'block';
+                            bottomNav.style.display = 'flex';
+                            // Запускаем всё, что связано с отображением меню
+                            initApp();
+                        }, 300);
+                    }, 500); // небольшая имитация загрузки
                 }
             }
 
-            // Фильтры прокрутка
-            function initFilterClicks() {
-                const chips = document.querySelectorAll('.filter-chip');
-                chips.forEach(chip => {
-                    chip.addEventListener('click', function() {
-                        const filterId = this.dataset.filter;
-                        chips.forEach(c => c.classList.remove('active-filter'));
-                        this.classList.add('active-filter');
-                        const section = document.getElementById(filterId);
-                        if (section) section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            // Запуск приложения
+            function initApp() {
+                const userEmail = (() => {
+                    try {
+                        const userData = JSON.parse(getCookie('user') || '{}');
+                        return userData.email || 'Пользователь';
+                    } catch { return 'Пользователь'; }
+                })();
+
+                // Данные товаров (как в предыдущей версии)
+                const products = [
+                    { id: 1, name: 'Пепперони', desc: 'Острая пепперони, сыр', weight: '320г', price: 390, category: 'pizza', img: 'https://images.unsplash.com/photo-1604382354936-07c5d9983bd3?w=400&auto=format' },
+                    { id: 2, name: 'Маргарита', desc: 'Сыр, базилик, томаты', weight: '300г', price: 340, category: 'pizza', img: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=400&auto=format' },
+                    { id: 3, name: 'Филадельфия', desc: 'Лосось, сливочный сыр', weight: '200г', price: 430, category: 'sushi', img: 'https://images.unsplash.com/photo-1617196035154-1e7e6e28b0db?w=400&auto=format' },
+                    { id: 4, name: 'Калифорния', desc: 'Краб, авокадо, икра', weight: '210г', price: 390, category: 'sushi', img: 'https://images.unsplash.com/photo-1559410545-0bdcd187e52a?w=400&auto=format' },
+                    { id: 5, name: 'Сырные палочки', desc: 'С соусом ранч', weight: '150г', price: 220, category: 'snacks', img: 'https://images.unsplash.com/photo-1531749668029-2db88e4276be?w=400&auto=format' },
+                    { id: 6, name: 'Картофель фри', desc: 'Хрустящий', weight: '180г', price: 150, category: 'snacks', img: 'https://images.unsplash.com/photo-1573080496219-bb080dd4f877?w=400&auto=format' },
+                    { id: 7, name: 'Лимонад', desc: 'Малина-мята', weight: '400мл', price: 180, category: 'cold_drinks', img: 'https://images.unsplash.com/photo-1621930231178-9d540ba7debf?w=400&auto=format' },
+                    { id: 8, name: 'Айс-кофе', desc: 'Кофе с молоком', weight: '300мл', price: 170, category: 'cold_drinks', img: 'https://images.unsplash.com/photo-1461023058943-07fcbe16d735?w=400&auto=format' },
+                    { id: 9, name: 'Капучино', desc: 'Молочная пена', weight: '200мл', price: 160, category: 'hot_drinks', img: 'https://images.unsplash.com/photo-1572442388796-11668a67e53d?w=400&auto=format' },
+                    { id: 10, name: 'Эспрессо', desc: 'Крепкий', weight: '40мл', price: 99, category: 'hot_drinks', img: 'https://images.unsplash.com/photo-1610642372674-ffdf887a0c66?w=400&auto=format' },
+                    { id: 11, name: 'Чизкейк', desc: 'Нью-Йорк', weight: '120г', price: 210, category: 'desserts', img: 'https://images.unsplash.com/photo-1524351199678-941a58a3df50?w=400&auto=format' },
+                    { id: 12, name: 'Протеиновое печенье', desc: '3 шт, без сахара', weight: '90г', price: 150, category: 'desserts', img: 'https://images.unsplash.com/photo-1601820809541-3b9b10bff2df?w=400&auto=format' },
+                ];
+
+                const categories = [
+                    { id: 'pizza', name: 'Пицца', icon: 'fa-solid fa-pizza-slice' },
+                    { id: 'sushi', name: 'Суши / роллы', icon: 'fa-solid fa-fish' },
+                    { id: 'snacks', name: 'Закуски', icon: 'fa-solid fa-bowl-food' },
+                    { id: 'cold_drinks', name: 'Холодные напитки', icon: 'fa-solid fa-martini-glass-citrus' },
+                    { id: 'hot_drinks', name: 'Горячие напитки', icon: 'fa-solid fa-mug-hot' },
+                    { id: 'desserts', name: 'Десерты', icon: 'fa-solid fa-cake-candles' },
+                ];
+
+                // Корзина из localStorage
+                let cart = new Map();
+                try {
+                    const saved = localStorage.getItem('fitneseda_cart');
+                    if (saved) cart = new Map(Object.entries(JSON.parse(saved)).map(([k, v]) => [parseInt(k), v]));
+                } catch (e) {}
+
+                let persons = 1;
+
+                function saveCart() {
+                    const obj = Object.fromEntries(cart);
+                    localStorage.setItem('fitneseda_cart', JSON.stringify(obj));
+                    updateCartWidget();
+                    renderCartPage();
+                }
+
+                function updateCartWidget() {
+                    const total = Array.from(cart.entries()).reduce((acc, [id, qty]) => {
+                        const prod = products.find(p => p.id === id);
+                        return acc + (prod?.price || 0) * qty;
+                    }, 0);
+                    document.getElementById('cart-widget-total').innerText = total + ' ₽';
+                }
+
+                function renderHome() {
+                    const container = document.getElementById('home-categories');
+                    container.innerHTML = categories.map(cat => `
+                        <div class="category-card" data-category="${cat.id}">
+                            <i class="fas ${cat.icon}"></i>
+                            <span>${cat.name}</span>
+                        </div>
+                    `).join('');
+                    document.querySelectorAll('.category-card').forEach(card => {
+                        card.addEventListener('click', () => {
+                            const catId = card.dataset.category;
+                            document.querySelector('.nav-item[data-page="menu-page"]').click();
+                            setTimeout(() => {
+                                const section = document.getElementById(catId);
+                                if (section) section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                            }, 100);
+                        });
                     });
-                });
-            }
+                }
 
-            // ---------- РЕНДЕР КОРЗИНЫ ----------
-            function renderCartPage() {
-                const container = document.getElementById('cart-items-list');
-                const cartItems = Array.from(cart.entries()).map(([id, qty]) => {
-                    const prod = products.find(p => p.id === id);
-                    return prod ? { ...prod, qty } : null;
-                }).filter(Boolean);
+                function renderFilters() {
+                    const container = document.getElementById('filter-scroll');
+                    container.innerHTML = categories.map(cat => 
+                        `<div class="filter-chip" data-filter="${cat.id}"><i class="fas ${cat.icon}"></i>${cat.name}</div>`
+                    ).join('');
+                    document.querySelectorAll('.filter-chip')[0]?.classList.add('active-filter');
+                }
 
-                if (cartItems.length === 0) {
-                    container.innerHTML = '<p style="text-align:center; padding:30px;">Корзина пуста</p>';
-                } else {
+                function renderMenu() {
+                    const container = document.getElementById('categories-container');
                     let html = '';
-                    cartItems.forEach(item => {
-                        html += `
-                            <div class="cart-item-row" data-id="${item.id}">
-                                <div class="cart-item-info">
-                                    <div class="cart-item-title">${item.name}</div>
-                                    <div class="cart-item-price">${item.price} ₽</div>
-                                </div>
-                                <div class="cart-item-quantity">
-                                    <button class="cart-qty-btn cart-dec" data-id="${item.id}">−</button>
-                                    <span class="qty-value" id="cart-qty-${item.id}">${item.qty}</span>
-                                    <button class="cart-qty-btn cart-inc" data-id="${item.id}">+</button>
-                                </div>
-                                <div class="cart-item-total">${item.price * item.qty} ₽</div>
-                            </div>
-                        `;
+                    categories.forEach(cat => {
+                        const catProducts = products.filter(p => p.category === cat.id);
+                        if (!catProducts.length) return;
+                        html += `<div id="${cat.id}" class="category-section">`;
+                        html += `<div class="category-header">${cat.name}</div>`;
+                        html += `<div class="grid-2col">`;
+                        catProducts.forEach(prod => {
+                            const qty = cart.get(prod.id) || 0;
+                            const showIncrement = qty > 0;
+                            html += `<div class="product-card" data-id="${prod.id}">`;
+                            html += `<div class="product-img" style="background-image: url('${prod.img}');"></div>`;
+                            html += `<div class="product-info">`;
+                            html += `<div class="product-title">${prod.name}</div>`;
+                            html += `<div class="product-desc">${prod.desc} <span class="product-weight">${prod.weight}</span></div>`;
+                            html += `<div class="product-footer">`;
+                            html += `<span class="product-price">${prod.price} ₽</span>`;
+                            html += `<div class="cart-action" data-prod-id="${prod.id}">`;
+                            html += `<button class="price-cart-btn ${showIncrement ? 'hidden-control' : ''}" data-id="${prod.id}"><i class="fas fa-shopping-cart"></i> ${prod.price} ₽</button>`;
+                            html += `<div class="quantity-control ${!showIncrement ? 'hidden-control' : ''}" data-id="${prod.id}">`;
+                            html += `<button class="qty-btn dec-btn" data-id="${prod.id}">−</button>`;
+                            html += `<span class="qty-value" id="qty-${prod.id}">${qty}</span>`;
+                            html += `<button class="qty-btn inc-btn" data-id="${prod.id}">+</button>`;
+                            html += `</div></div></div></div></div>`;
+                        });
+                        html += `</div></div>`;
                     });
                     container.innerHTML = html;
+                    attachCartEvents();
+                }
 
-                    document.querySelectorAll('.cart-inc').forEach(btn => {
-                        btn.addEventListener('click', (e) => {
-                            const id = parseInt(e.currentTarget.dataset.id);
-                            cart.set(id, (cart.get(id) || 0) + 1);
-                            saveCart();
-                            renderCartPage();
-                            updateUIForProduct(id);
+                function attachCartEvents() {
+                    document.querySelectorAll('.price-cart-btn').forEach(btn => {
+                        btn.removeEventListener('click', handleAdd);
+                        btn.addEventListener('click', handleAdd);
+                    });
+                    document.querySelectorAll('.inc-btn').forEach(btn => {
+                        btn.removeEventListener('click', handleInc);
+                        btn.addEventListener('click', handleInc);
+                    });
+                    document.querySelectorAll('.dec-btn').forEach(btn => {
+                        btn.removeEventListener('click', handleDec);
+                        btn.addEventListener('click', handleDec);
+                    });
+                }
+
+                function handleAdd(e) {
+                    e.stopPropagation();
+                    const prodId = parseInt(e.currentTarget.dataset.id);
+                    cart.set(prodId, (cart.get(prodId) || 0) + 1);
+                    saveCart();
+                    updateUIForProduct(prodId);
+                }
+
+                function handleInc(e) {
+                    e.stopPropagation();
+                    const prodId = parseInt(e.currentTarget.dataset.id);
+                    const qty = cart.get(prodId) || 0;
+                    cart.set(prodId, qty + 1);
+                    saveCart();
+                    updateUIForProduct(prodId);
+                }
+
+                function handleDec(e) {
+                    e.stopPropagation();
+                    const prodId = parseInt(e.currentTarget.dataset.id);
+                    const qty = cart.get(prodId) || 0;
+                    if (qty <= 1) cart.delete(prodId);
+                    else cart.set(prodId, qty - 1);
+                    saveCart();
+                    updateUIForProduct(prodId);
+                }
+
+                function updateUIForProduct(prodId) {
+                    const qtySpan = document.getElementById(`qty-${prodId}`);
+                    const newQty = cart.get(prodId) || 0;
+                    if (qtySpan) qtySpan.innerText = newQty;
+                    const cartAction = document.querySelector(`.cart-action[data-prod-id="${prodId}"]`);
+                    if (!cartAction) return;
+                    const addBtn = cartAction.querySelector('.price-cart-btn');
+                    const qtyCtrl = cartAction.querySelector('.quantity-control');
+                    if (newQty > 0) {
+                        addBtn?.classList.add('hidden-control');
+                        qtyCtrl?.classList.remove('hidden-control');
+                        qtyCtrl.style.animation = 'none';
+                        qtyCtrl.offsetHeight;
+                        qtyCtrl.style.animation = 'pop 0.2s ease';
+                    } else {
+                        addBtn?.classList.remove('hidden-control');
+                        qtyCtrl?.classList.add('hidden-control');
+                    }
+                }
+
+                function initFilterClicks() {
+                    const chips = document.querySelectorAll('.filter-chip');
+                    chips.forEach(chip => {
+                        chip.addEventListener('click', function() {
+                            const filterId = this.dataset.filter;
+                            chips.forEach(c => c.classList.remove('active-filter'));
+                            this.classList.add('active-filter');
+                            const section = document.getElementById(filterId);
+                            if (section) section.scrollIntoView({ behavior: 'smooth', block: 'start' });
                         });
                     });
-                    document.querySelectorAll('.cart-dec').forEach(btn => {
-                        btn.addEventListener('click', (e) => {
-                            const id = parseInt(e.currentTarget.dataset.id);
-                            const qty = cart.get(id) || 0;
-                            if (qty <= 1) cart.delete(id);
-                            else cart.set(id, qty - 1);
-                            saveCart();
-                            renderCartPage();
-                            updateUIForProduct(id);
+                }
+
+                function renderCartPage() {
+                    const container = document.getElementById('cart-items-list');
+                    const cartItems = Array.from(cart.entries()).map(([id, qty]) => {
+                        const prod = products.find(p => p.id === id);
+                        return prod ? { ...prod, qty } : null;
+                    }).filter(Boolean);
+
+                    if (cartItems.length === 0) {
+                        container.innerHTML = '<p style="text-align:center; padding:30px;">Корзина пуста</p>';
+                    } else {
+                        let html = '';
+                        cartItems.forEach(item => {
+                            html += `
+                                <div class="cart-item-row" data-id="${item.id}">
+                                    <div class="cart-item-info">
+                                        <div class="cart-item-title">${item.name}</div>
+                                        <div class="cart-item-price">${item.price} ₽</div>
+                                    </div>
+                                    <div class="cart-item-quantity">
+                                        <button class="cart-qty-btn cart-dec" data-id="${item.id}">−</button>
+                                        <span class="qty-value" id="cart-qty-${item.id}">${item.qty}</span>
+                                        <button class="cart-qty-btn cart-inc" data-id="${item.id}">+</button>
+                                    </div>
+                                    <div class="cart-item-total">${item.price * item.qty} ₽</div>
+                                </div>
+                            `;
+                        });
+                        container.innerHTML = html;
+
+                        document.querySelectorAll('.cart-inc').forEach(btn => {
+                            btn.addEventListener('click', (e) => {
+                                const id = parseInt(e.currentTarget.dataset.id);
+                                cart.set(id, (cart.get(id) || 0) + 1);
+                                saveCart();
+                                renderCartPage();
+                                updateUIForProduct(id);
+                            });
+                        });
+                        document.querySelectorAll('.cart-dec').forEach(btn => {
+                            btn.addEventListener('click', (e) => {
+                                const id = parseInt(e.currentTarget.dataset.id);
+                                const qty = cart.get(id) || 0;
+                                if (qty <= 1) cart.delete(id);
+                                else cart.set(id, qty - 1);
+                                saveCart();
+                                renderCartPage();
+                                updateUIForProduct(id);
+                            });
+                        });
+                    }
+
+                    const total = Array.from(cart.entries()).reduce((acc, [id, qty]) => {
+                        const prod = products.find(p => p.id === id);
+                        return acc + (prod?.price || 0) * qty;
+                    }, 0);
+                    document.getElementById('cart-total-amount').innerText = total + ' ₽';
+                }
+
+                // Навигация
+                function initNavigation() {
+                    const homePage = document.getElementById('home-page');
+                    const menuPage = document.getElementById('menu-page');
+                    const cartPage = document.getElementById('cart-page');
+                    const profilePage = document.getElementById('profile-page');
+                    const navItems = document.querySelectorAll('.nav-item');
+                    const cartWidget = document.getElementById('cart-widget');
+                    const backBtn = document.getElementById('back-to-menu');
+
+                    function setActivePage(pageId) {
+                        homePage.classList.remove('active-page');
+                        menuPage.classList.remove('active-page');
+                        cartPage.classList.remove('active-page');
+                        profilePage.classList.remove('active-page');
+                        document.getElementById(pageId).classList.add('active-page');
+                        navItems.forEach(n => n.classList.remove('active'));
+                        if (pageId === 'home-page') navItems[0].classList.add('active');
+                        if (pageId === 'menu-page') navItems[1].classList.add('active');
+                        if (pageId === 'profile-page') navItems[2].classList.add('active');
+                    }
+
+                    navItems.forEach(item => {
+                        item.addEventListener('click', () => {
+                            setActivePage(item.dataset.page);
                         });
                     });
-                }
 
-                const total = Array.from(cart.entries()).reduce((acc, [id, qty]) => {
-                    const prod = products.find(p => p.id === id);
-                    return acc + (prod?.price || 0) * qty;
-                }, 0);
-                document.getElementById('cart-total-amount').innerText = total + ' ₽';
-            }
-
-            // ---------- ПЕРСОНЫ ----------
-            function initPersons() {
-                const personsSpan = document.getElementById('persons-count');
-                document.getElementById('inc-persons').addEventListener('click', () => {
-                    persons++;
-                    personsSpan.innerText = persons;
-                });
-                document.getElementById('dec-persons').addEventListener('click', () => {
-                    if (persons > 1) persons--;
-                    personsSpan.innerText = persons;
-                });
-            }
-
-            // ---------- ЗАКАЗ ----------
-            document.getElementById('place-order-btn').addEventListener('click', () => {
-                if (cart.size === 0) {
-                    alert('Корзина пуста');
-                    return;
-                }
-                const comment = document.getElementById('order-comment').value;
-                alert(`Заказ оформлен!\nПерсон: ${persons}\nКомментарий: ${comment || '—'}`);
-                cart.clear();
-                saveCart();
-                document.getElementById('back-to-menu').click();
-                renderMenu();
-            });
-
-            // ---------- НАВИГАЦИЯ ----------
-            function initNavigation() {
-                const homePage = document.getElementById('home-page');
-                const menuPage = document.getElementById('menu-page');
-                const cartPage = document.getElementById('cart-page');
-                const profilePage = document.getElementById('profile-page');
-                const navItems = document.querySelectorAll('.nav-item');
-                const cartWidget = document.getElementById('cart-widget');
-                const backBtn = document.getElementById('back-to-menu');
-
-                function setActivePage(pageId) {
-                    homePage.classList.remove('active-page');
-                    menuPage.classList.remove('active-page');
-                    cartPage.classList.remove('active-page');
-                    profilePage.classList.remove('active-page');
-                    document.getElementById(pageId).classList.add('active-page');
-                    navItems.forEach(n => n.classList.remove('active'));
-                    if (pageId === 'home-page') navItems[0].classList.add('active');
-                    if (pageId === 'menu-page') navItems[1].classList.add('active');
-                    if (pageId === 'profile-page') navItems[2].classList.add('active');
-                }
-
-                navItems.forEach(item => {
-                    item.addEventListener('click', () => {
-                        setActivePage(item.dataset.page);
+                    cartWidget.addEventListener('click', () => {
+                        setActivePage('cart-page');
+                        renderCartPage();
                     });
+
+                    backBtn.addEventListener('click', () => {
+                        setActivePage('menu-page');
+                    });
+                }
+
+                function initPersons() {
+                    const personsSpan = document.getElementById('persons-count');
+                    document.getElementById('inc-persons').addEventListener('click', () => {
+                        persons++;
+                        personsSpan.innerText = persons;
+                    });
+                    document.getElementById('dec-persons').addEventListener('click', () => {
+                        if (persons > 1) persons--;
+                        personsSpan.innerText = persons;
+                    });
+                }
+
+                function renderProfile() {
+                    document.getElementById('profile-email').innerText = userEmail;
+                    document.getElementById('logout-btn').addEventListener('click', () => {
+                        deleteCookie('auth');
+                        window.location.href = 'index.html';
+                    });
+                }
+
+                document.getElementById('place-order-btn').addEventListener('click', () => {
+                    if (cart.size === 0) {
+                        alert('Корзина пуста');
+                        return;
+                    }
+                    const comment = document.getElementById('order-comment').value;
+                    alert(`Заказ оформлен!\nПерсон: ${persons}\nКомментарий: ${comment || '—'}`);
+                    cart.clear();
+                    saveCart();
+                    document.getElementById('back-to-menu').click();
+                    renderMenu();
                 });
 
-                cartWidget.addEventListener('click', () => {
-                    setActivePage('cart-page');
-                    renderCartPage();
-                });
-
-                backBtn.addEventListener('click', () => {
-                    setActivePage('menu-page');
-                });
-            }
-
-            // ---------- ПРОФИЛЬ ----------
-            function renderProfile() {
-                document.getElementById('profile-email').innerText = userEmail;
-                document.getElementById('logout-btn').addEventListener('click', () => {
-                    deleteCookie('auth');
-                    window.location.href = 'index.html';
-                });
-            }
-
-            // ---------- СТАРТ ----------
-            window.addEventListener('DOMContentLoaded', () => {
+                // Инициализация всех компонентов
                 renderHome();
                 renderFilters();
                 renderMenu();
@@ -1041,7 +1085,9 @@
                 initPersons();
                 updateCartWidget();
                 renderProfile();
-            });
+            }
+
+            window.addEventListener('DOMContentLoaded', checkAuth);
         })();
     </script>
 </body>
